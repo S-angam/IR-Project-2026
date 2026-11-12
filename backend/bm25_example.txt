@@ -1,0 +1,29 @@
+Corpus: C:\Users\dhruv\Desktop\IRSangam\data\raw\corpus.jsonl
+Movie limit: 10000 (0 = all); stemming: True
+Scanned 14,525 records; indexed 10,000 plots; missing plots 4,525; empty after preprocessing 0; missing identity 0.
+Plot sources: {'synopsis': 660, 'plot': 9020, 'plot summary': 172, 'storyline': 28, 'plot overview': 13, 'story': 74, 'plot synopsis': 27, 'plot outline': 6}
+
+Query: a reporter keeps waking up on the same day while covering a small-town festival.
+Tokens: ['report', 'keep', 'wake', 'same', 'day', 'cover', 'small', 'town', 'festiv']
+Not in index vocabulary: []
+1. 142327 | Groundhog Day (film) | score=20.5175
+   section=plot; tokens=413; matched=['report', 'wake', 'same', 'day', 'small', 'town', 'festiv']
+   During one iteration of the loop, Phil reports on the Groundhog Day festivities with such eloquence that other news crews stop working to listen to his speech, amazing Rita.
+2. 2256919 | Chef's Chocolate Salty Balls | score=17.7966
+   section=plot; tokens=357; matched=['report', 'cover', 'small', 'town', 'festiv']
+   However, Redford plans to sue the whole the town if they go through with ending the festival; he then reveals to his wife, Phyllis, that he will make all small towns overrun with Hollywood culture, since he cannot escape it, so he wants to inflict it on everyone else.
+3. 1526741 | Ánimas Trujano (film) | score=16.5214
+   section=plot; tokens=106; matched=['cover', 'small', 'town', 'festiv']
+   The film's setting is a town in Oaxaca during the festival of its patron saint, for which the church appoints a layman as "mayordomo" or steward, an honor that in effect is gained by being able to organize and cover the high costs of most of the saint's local festivities.
+4. 2082558 | Danny Deckchair | score=14.8767
+   section=plot; tokens=701; matched=['report', 'keep', 'wake', 'day', 'cover', 'small', 'town', 'festiv']
+   After he is beaten up in a rugged ride through a thunderstorm, fireworks from a small town's macadamia festival burst most of his balloons.
+5. 1998991 | The Gathering (2003 film) | score=14.1197
+   section=plot synopsis; tokens=528; matched=['wake', 'same', 'day', 'town', 'festiv']
+   Later that same day, Cassie experiences visions where she watches a young Argyle dragged into the house by the orphanage priest, while three of the town's leading figures watch and laugh.
+
+Inspect: 142327 | Groundhog Day (film)
+Available sections: ['abstract', 'plot', 'cast', 'production', 'concept and original draft', 'development', 'writing', 'casting', 'pre-production', 'filming', 'release', 'context', 'box office', 'reception', 'critical reception', 'accolades', 'post-release', 'aftermath', 'home media and re-releases', 'analysis', 'time loop duration', 'thematic analysis', 'legacy', 'critical reassessment', 'cultural impact', 'adaptations']
+section=plot; rank=1; score=20.5175; tokens=413
+Matched terms: ['report', 'wake', 'same', 'day', 'small', 'town', 'festiv']
+Absent terms: ['keep', 'cover']

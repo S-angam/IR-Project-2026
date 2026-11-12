@@ -1,0 +1,41 @@
+{
+  "dataset": "TREC Tip-of-the-Tongue 2023",
+  "guidelines": "https://trec-tot.github.io/guidelines-2023",
+  "files": [
+    {
+      "filename": "corpus.jsonl.zip",
+      "url": "https://surfdrive.surf.nl/files/index.php/s/sWLysSXtFRLz8R1/download",
+      "md5": "3bdf2941d256c88d1fbfd9dbc483f43d",
+      "published_entries": 231618,
+      "extracted_files": {"corpus.jsonl": 4272648496}
+    },
+    {
+      "filename": "train.zip",
+      "url": "https://surfdrive.surf.nl/files/index.php/s/KJFwx32qMT7Tinh/download",
+      "md5": "f5e7e07e409f214b5a67af7e23b231c7",
+      "published_entries": 150,
+      "extracted_files": {"train/queries.jsonl": 1454042, "train/qrel.txt": 2452}
+    },
+    {
+      "filename": "dev.zip",
+      "url": "https://surfdrive.surf.nl/files/index.php/s/F1mUvAW06gn7OdP/download",
+      "md5": "40ef6eace079a40f23237005db1b0f1a",
+      "published_entries": 150,
+      "extracted_files": {"dev/queries.jsonl": 1294100, "dev/qrel.txt": 2454}
+    },
+    {
+      "filename": "test.zip",
+      "url": "https://surfdrive.surf.nl/files/index.php/s/qQCQ1iRZvj712kv/download",
+      "md5": "756b77a2725f0960defb3a9b12d95334",
+      "published_entries": 150,
+      "extracted_files": {"test/queries.jsonl": 1275640}
+    },
+    {
+      "filename": "wikipage_id_to_imdb.json.zip",
+      "url": "https://surfdrive.surf.nl/files/index.php/s/6C1ih8E2SMcQyXR/download",
+      "md5": "c837316e9374b577974dc14b12a15a2c",
+      "published_entries": 190370,
+      "extracted_files": {"wikipage_id_to_imdb.json": 5108477}
+    }
+  ]
+}

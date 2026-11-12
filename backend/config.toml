@@ -1,0 +1,40 @@
+[bm25]
+corpus_path = "../data/raw/corpus.jsonl"
+max_movies = 20000
+top_k = 5
+k1 = 1.5
+b = 0.75
+stemming = true
+remove_stopwords = true
+show_images = true
+plot_sections = [
+    "plot",
+    "synopsis",
+    "plot summary",
+    "plot synopsis",
+    "story",
+    "storyline",
+    "plot overview",
+    "plot outline",
+]
+
+[dense]
+model = "sentence-transformers/all-MiniLM-L6-v2"
+model_repository = "Qdrant/all-MiniLM-L6-v2-onnx"
+model_revision = "d13954661f83248295ba75c1ed411eef3b7b936e"
+cache_path = "../data/processed/embeddings.sqlite3"
+model_cache_path = "../data/processed/models"
+batch_size = 32
+threads = 4
+
+[hybrid]
+rrf_k = 60
+candidate_k = 100
+
+[evaluation]
+split = "dev"
+data_path = "../data/raw"
+results_path = "../data/processed/results.json"
+
+[experiment]
+results_path = "../data/processed/experiment_results.json"

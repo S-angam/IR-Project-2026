@@ -1,0 +1,109 @@
+{
+  "corpus.jsonl.zip": {
+    "bytes": 949749003,
+    "md5_verified": true,
+    "members": {
+      "corpus.jsonl": {
+        "uncompressed_bytes": 4272648496,
+        "records": 231852,
+        "first_record_keys": [
+          "page_title",
+          "page_source",
+          "wikidata_id",
+          "wikidata_classes",
+          "text",
+          "sections",
+          "infoboxes",
+          "doc_id"
+        ]
+      }
+    }
+  },
+  "train.zip": {
+    "bytes": 94468,
+    "md5_verified": true,
+    "members": {
+      "train/queries.jsonl": {
+        "uncompressed_bytes": 1454042,
+        "records": 150,
+        "first_record_keys": [
+          "id",
+          "url",
+          "domain",
+          "title",
+          "text",
+          "wikipedia_id",
+          "wikipedia_url",
+          "wikidata_id",
+          "imdb_url",
+          "sentence_annotations"
+        ]
+      },
+      "train/qrel.txt": {
+        "uncompressed_bytes": 2452,
+        "rows": 150
+      }
+    }
+  },
+  "dev.zip": {
+    "bytes": 88036,
+    "md5_verified": true,
+    "members": {
+      "dev/queries.jsonl": {
+        "uncompressed_bytes": 1294100,
+        "records": 150,
+        "first_record_keys": [
+          "id",
+          "url",
+          "domain",
+          "title",
+          "text",
+          "wikipedia_id",
+          "wikipedia_url",
+          "wikidata_id",
+          "imdb_url",
+          "sentence_annotations"
+        ]
+      },
+      "dev/qrel.txt": {
+        "uncompressed_bytes": 2454,
+        "rows": 150
+      }
+    }
+  },
+  "test.zip": {
+    "bytes": 78520,
+    "md5_verified": true,
+    "members": {
+      "test/queries.jsonl": {
+        "uncompressed_bytes": 1275640,
+        "records": 150,
+        "first_record_keys": [
+          "id",
+          "domain",
+          "title",
+          "text",
+          "sentence_annotations"
+        ]
+      }
+    }
+  },
+  "wikipage_id_to_imdb.json.zip": {
+    "bytes": 1443389,
+    "md5_verified": true,
+    "members": {
+      "wikipage_id_to_imdb.json": {
+        "uncompressed_bytes": 5108477,
+        "records": 190370,
+        "example": {
+          "330": [
+            "tt0115462"
+          ],
+          "324": [
+            "ev0000003"
+          ]
+        }
+      }
+    }
+  }
+}
