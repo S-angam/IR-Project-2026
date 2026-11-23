@@ -29,8 +29,8 @@ reuse identical-input automatic measurements, explicitly marked in JSON. The
 manual original baseline has no marked clue, so relaxed Hybrid reuses Hybrid's
 identical measurement.
 
-Results save to `data/processed/experiment_results.json`; originals also update
-`results.json`. The API prevents concurrent benchmark runs. Use one CLI runner
+Results save to `data/processed/experiment_results_covered50.json`. Originals also
+update `results_covered50.json`. The API prevents concurrent benchmark runs. Use one CLI runner
 at a time. Dev has already been inspected; final claims need a fresh labelled split.
 
 ## Starting the service
@@ -43,11 +43,10 @@ uv run script/evaluate.py
 uv run main.py
 ```
 
-`main.py` starts the API at http://127.0.0.1:8000. It reads prepared records and
-builds lexical indexes once during application startup and loads precomputed dense
-vectors from SQLite. Requests reuse these in-memory rankers. The model loads from
-its local cache; startup never downloads models or embeds movie plots. If vectors
-are missing, BM25 and TF-IDF stay available while dense/hybrid are marked unavailable.
+`main.py` starts the API at http://127.0.0.1:8000. It builds the lexical indexes at
+startup and opens the existing persistent ChromaDB collection. The embedding model
+loads from its local cache. Startup never downloads models or embeds movie plots.
+If vectors are missing, BM25 and TF-IDF stay available while dense/hybrid are marked unavailable.
 Prepare missing dataset files separately with:
 
 ```powershell
@@ -69,8 +68,9 @@ Dataset storage and the proposed movie schema are documented in
 
 ## API
 
-Routers are in `routers/search.py`, Pydantic request/response models in
-`models.py`, and shared index management in `search_service.py`.
+API routes are grouped by feature in `routers/`. Request and response schemas
+are in `models/`, ranking and corpus code in `retrieval/`, and index management
+and answer generation in `services/`. Benchmark code lives in `benchmarks/`.
 
 `POST /search` accepts:
 
@@ -91,7 +91,17 @@ searches in its own latency. Invalid methods, blank queries, and top_k outside
 Repeated method names are deduplicated.
 
 `GET /config` returns settings, index size, corpus counters, rebuild status, method
-availability and the current index fingerprint.
+availability and the current index fingerprint. `dense_index` reports the ChromaDB
+collection name, stored vectors and missing vectors for the selected plots.
+
+`POST /answer` takes `query`, optional `uncertain_clues`, and optional `auto_relax`.
+It retrieves up to five candidates with Hybrid or relaxed Hybrid. When dense search
+is unavailable, it uses BM25. The backend sends plot excerpts to the configured
+Gemini model via LangChain and verifies that the selected ID is a candidate and its evidence quote
+appears in that candidate's excerpt. The response includes `status`, `method`, `model`,
+`explanation`, and retrieved `sources` with Wikipedia links. `unavailable` responses
+include the evidence so it remains inspectable. The default model is `gemini-4-hydrogen`.
+Set `GOOGLE_API_KEY` in the ignored `backend/.env` or in the backend process environment.
 `PUT /config` accepts the complete settings object and saves it to `config.toml`.
 Collection/ranking changes prepare a replacement index before swapping it in;
 existing requests can use the old index during preparation. A concurrent update
@@ -114,7 +124,7 @@ get 409. A failed job preserves the old rankers and completed cache batches.
 
 ## Rankers and offline embeddings
 
-`rankers.py` defines the `Ranker` protocol: `search(query, top_k) -> list[Hit]`.
+`retrieval/rankers.py` defines the `Ranker` protocol `search(query, top_k) -> list[Hit]`.
 A hit carries a corpus position and score. The service adds shared movie metadata,
 one-based ranks and snippets, so every method has the same API result format.
 
@@ -122,8 +132,8 @@ one-based ranks and snippets, so every method has the same API result format.
 - **TF-IDF:** full-plot term counts from the same tokenizer, smoothed IDF, L2
   normalization, cosine similarity. Unknown vocabulary gives no results.
 - **Dense:** pretrained [all-MiniLM-L6-v2](https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2),
-  384-dimensional normalized vectors, via FastEmbed/ONNX on CPU. Mean pooling and
-  cosine similarity; no task-specific training, no title/answer leakage. The
+  384-dimensional vectors via FastEmbed/ONNX on CPU with mean pooling and cosine
+  similarity. ChromaDB's HNSW index retrieves approximate nearest neighbors. The
   pinned ONNX model revision is in `[dense]` in `config.toml`.
 - **Hybrid:** BM25 + dense, equal-weight Reciprocal Rank Fusion:
   `sum(1 / (rrf_k + rank))`, ranks start at 1. Defaults: `rrf_k=60`,
@@ -136,14 +146,14 @@ This initial baseline may miss scenes late in long plots; lexical rankers read
 the full plot. Dense cosine values and RRF scores are ranking values, not
 confidence percentages, and are not numerically comparable to BM25 scores.
 
-`uv run script/prepare_index.py` computes movie vectors offline for the configured
-limit, stores them in `data/processed/embeddings.sqlite3`, and commits each batch.
-It skips valid existing vectors, resumes interrupted work, and keys vectors by
-normalized plot content, model revision and preprocessing recipe. The local model
-files are under `data/processed/models/`. Changing the limit can reuse existing
-vectors; new/unseen plots require preparation. After running the CLI, restart
-the API or click **Prepare dense index** to load the saved vectors. Search only
-encodes the query and multiplies it by the loaded matrix.
+`uv run script/prepare_index.py` stores vectors, plot text and metadata in batches
+in `data/processed/chroma`. It skips completed records and resumes interrupted work.
+Records are keyed by movie ID and normalized plot content within a collection tied
+to the model revision, preprocessing recipe and HNSW settings. A lower plot limit
+restricts Chroma search to active IDs. The model cache is under `data/processed/models`.
+If upgrading, use `--import-sqlite ../data/processed/embeddings.sqlite3` to import
+compatible vectors from the old cache as part of preparation. Restart the API after
+CLI preparation. Search encodes the query and submits that vector to ChromaDB.
 
 The current prepared collection has 20,000 usable plots. Index statistics tell
 you how many source records were skipped for missing plots. Reducing the movie
@@ -156,9 +166,13 @@ Run `uv run script/evaluate.py` or click **Run benchmark / Run again** in React.
 returns progress, the saved summary and whether its index fingerprint is stale.
 All five rankers must be ready. Evaluation uses one immutable index snapshot.
 
-The default is the **150 labelled dev queries**, joining `id` with `dev/qrel.txt`.
-Only `title` + `text` form the query; answer fields are never read as queries.
-Train is configurable; test is rejected because the supplied test set has no qrels.
+The default is a **fixed set of 50 labelled dev queries** listed in
+`data/benchmark_cohort.json`. Of the 150 labelled development queries, 63 had a
+relevant movie in the 20,000-plot baseline. A fixed hash of the query IDs selected
+50 of those 63 without using ranking scores. The same IDs apply to future runs.
+Only `title` and `text` form the query. Relevance labels join by `id` for grading.
+For a different labelled split, use a matching cohort file or omit `cohort_path`
+to evaluate the full split. The supplied test set has no relevance labels.
 
 - **Success@5:** fraction of queries with any relevant movie in the top five.
 - **MRR@10:** mean reciprocal rank of the first relevant movie in the top ten;
@@ -168,11 +182,11 @@ Train is configurable; test is rejected because the supplied test set has no qre
   rotated across queries. No query-result caching is used. Latency depends on
   hardware and concurrent load, and excludes queueing/network/images/preparation.
 
-The denominator includes **all labelled queries**, including targets outside the
-selected plot collection. Coverage and covered-only diagnostic metrics are also
-saved so missing targets cannot silently inflate the main scores.
+The denominator includes **every query in the configured benchmark**. If index
+settings remove a target, it counts as a miss. The report shows current coverage
+and relevance among covered queries separately.
 
-The complete report is written atomically to `data/processed/results.json`, with
+The complete report is written atomically to `data/processed/results_covered50.json`, with
 timestamp, split, corpus fingerprint, model revision, settings, aggregate metrics,
 and per-query top-10 IDs/scores. React displays the summary and warns when it is
 from an earlier index. An interrupted evaluation leaves the previous report intact.
@@ -180,7 +194,7 @@ Use a single CLI or API evaluation writer at a time.
 
 ### Browse and test individual descriptions
 
-`GET /evaluation/queries` returns all labelled queries for the configured split,
+`GET /evaluation/queries` returns the configured benchmark queries,
 their exact `title + text` search input, relevant movie IDs, and current index
 coverage. React exposes this under **Browse benchmark queries**. **Use this
 description** fills the search box and expected IDs without running a search.
@@ -199,10 +213,10 @@ for one query; MRR@10 averages reciprocal ranks across a query set. Missing
 targets count as misses and are labelled as outside the current index.
 
 Expected IDs are never passed to the rankers. This diagnostic does not overwrite
-`results.json` or change the overall benchmark. Both search routes accept up to
+the saved report or change the overall benchmark. Both search routes accept up to
 20,000 characters so full benchmark descriptions can be tested through the UI.
 
-Measured on 2026-11-11 with 20,000 plots and all 150 dev queries (63 targets
+Measured before the ChromaDB migration on 2026-11-11 with 20,000 plots and all 150 dev queries (63 targets
 covered by the selected corpus):
 
 | Method | Success@5 | MRR@10 | Mean latency (ms) | P95 (ms) |

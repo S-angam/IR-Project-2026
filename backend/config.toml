@@ -22,10 +22,11 @@ plot_sections = [
 model = "sentence-transformers/all-MiniLM-L6-v2"
 model_repository = "Qdrant/all-MiniLM-L6-v2-onnx"
 model_revision = "d13954661f83248295ba75c1ed411eef3b7b936e"
-cache_path = "../data/processed/embeddings.sqlite3"
+chroma_path = "../data/processed/chroma"
 model_cache_path = "../data/processed/models"
 batch_size = 32
 threads = 4
+ef_search = 200
 
 [hybrid]
 rrf_k = 60
@@ -34,7 +35,13 @@ candidate_k = 100
 [evaluation]
 split = "dev"
 data_path = "../data/raw"
-results_path = "../data/processed/results.json"
+cohort_path = "../data/benchmark_cohort.json"
+results_path = "../data/processed/results_covered50.json"
 
 [experiment]
-results_path = "../data/processed/experiment_results.json"
+results_path = "../data/processed/experiment_results_covered50.json"
+
+[answer]
+model = "gemini-4-hydrogen"
+thinking_level = "low"
+timeout_seconds = 60

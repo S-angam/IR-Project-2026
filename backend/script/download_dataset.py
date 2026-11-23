@@ -2,11 +2,10 @@
 
 import hashlib
 import json
-from pathlib import Path
 import shutil
+from pathlib import Path
 from urllib.request import urlopen
 from zipfile import ZipFile
-
 
 DATA_DIR = Path(__file__).resolve().parents[2] / "data"
 CHUNK_SIZE = 1024 * 1024
@@ -63,7 +62,8 @@ def ensure_dataset(data_dir: Path = DATA_DIR) -> Path:
             raise ValueError(f"No extraction targets for {item['filename']}")
         targets = {name: _target_path(raw_dir, name) for name in expected}
         missing = [
-            name for name, path in targets.items()
+            name
+            for name, path in targets.items()
             if not _matches_size(path, expected[name])
         ]
         if not missing:

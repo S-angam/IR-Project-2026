@@ -1,5 +1,8 @@
 # IRSangam frontend
 
+`src/pages/` contains the two app views. Search and benchmark components live in
+`src/components/`, with API state and polling in `src/hooks/` and styles in `src/styles/`.
+
 Simple React + Vite movie search UI. Start the backend in another terminal with
 `uv run main.py` from `backend/`, then run:
 
@@ -9,7 +12,7 @@ npm run dev
 ```
 
 Open http://127.0.0.1:5173. Vite forwards `/api/search`, `/api/config`,
-`/api/index/progress`, `/api/index/prepare`, `/api/evaluation` and `/api/posters`
+`/api/index/progress`, `/api/index/prepare`, `/api/evaluation`, `/api/answer` and `/api/posters`
 to the backend on port 8000. The actual FastAPI endpoint is
 `POST /search`.
 
@@ -23,12 +26,12 @@ Elapsed time is reported by the ranking method, separately from image loading.
 Score scales differ between rankers, so compare ordering rather than raw scores.
 
 The **Benchmark** table shows Success@5, MRR@10, mean latency and p95 latency
-from the backend's saved `data/processed/results.json`. Coverage is explicit and
+from the backend's saved `data/processed/results_covered50.json`. Coverage is explicit and
 missing target movies count as misses. Expand metric details for definitions,
 timestamp and covered-only diagnostics. **Run benchmark / Run again** evaluates
 all five methods and updates the table and charts. Old metrics are marked when settings change.
 
-Expand **Browse benchmark queries** to read all 150 dev descriptions and see the
+Expand **Browse benchmark queries** to read the 50 selected dev descriptions and see the
 expected IDs and whether their movies are indexed. **Use this description** copies
 the exact benchmark query and expected IDs into the search form.
 
@@ -49,7 +52,12 @@ invented total. The sidebar stacks below the content on narrow screens.
 
 **Prepare dense index** computes and caches new movie embeddings, with live counts.
 Dense/Hybrid and Compare all remain unavailable until every selected movie has a
-saved embedding. Existing lexical searches remain available during preparation.
+saved ChromaDB embedding. Existing lexical searches remain available during preparation.
+
+**Generate answer** runs separately from ranking comparison. It shows the model's
+candidate, a verified excerpt and a Wikipedia link. Set `GOOGLE_API_KEY` in the
+backend environment to enable Gemini. The panel displays retrieved evidence when
+generation is unavailable.
 
 ```powershell
 npm run build
